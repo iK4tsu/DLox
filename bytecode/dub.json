@@ -1,0 +1,13 @@
+{
+	"authors": [
+		"João Lourenço"
+	],
+	"copyright": "Copyright © 2022, João Lourenço",
+	"description": "D interpreter of Robert Nystrom's Lox programing language.",
+	"license": "GPL-3.0",
+	"name": "dlox",
+	"sourcePaths": ["source"],
+	"importPaths": ["source"],
+	"targetPath": "bin",
+	"targetName": "dlox"
+}
