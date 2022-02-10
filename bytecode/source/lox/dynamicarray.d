@@ -480,3 +480,40 @@ private:
 	arr = [1, 2, 3, 4, 5, 6];
 	assert(arr == [1, 2, 3, 4, 5, 6]);
 }
+
+@safe pure nothrow @nogc unittest
+{
+	DynamicArray!(DynamicArray!int) arr = [ DynamicArray!int([4]) ];
+	assert(arr[0] == DynamicArray!int([4]));
+
+	arr[0] = DynamicArray!int([3]);
+	assert(arr[0] == DynamicArray!int([3]));
+
+	arr[0][0] = 45;
+	assert(arr[0] == DynamicArray!int([45]));
+}
+
+@safe pure nothrow @nogc unittest
+{
+	DynamicArray!int arr;
+	assert((arr ~  1) == [1]);
+	assert((arr ~= 1) == [1]);
+	assert((arr ~  [2, 3]) == [1, 2, 3]);
+	assert((arr ~= [2, 3]) == [1, 2, 3]);
+	assert((arr ~  DynamicArray!int([4])) == [1, 2, 3, 4]);
+	assert((arr ~= DynamicArray!int([4])) == [1, 2, 3, 4]);
+}
+
+@safe pure nothrow @nogc unittest
+{
+	DynamicArray!int arr = [1, 2, 3, 4];
+
+	arr.remove(1);
+	assert(arr == [1, 3, 4]);
+
+	arr.popBack();
+	assert(arr == [1, 3]);
+
+	arr.popFront();
+	assert(arr == [3]);
+}
