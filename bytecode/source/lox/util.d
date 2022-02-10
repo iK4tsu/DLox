@@ -20,3 +20,19 @@ auto assumePure(T)(T t)
 	enum attrs = functionAttributes!T | FunctionAttribute.pure_;
 	return cast(SetFunctionAttributes!(T, functionLinkage!T, attrs)) t;
 }
+
+
+/// a type that can either hold something or nothing
+alias Optional(T) = SumType!(None, Some!T);
+
+/// a type that holds nothing
+struct None {}
+
+/// helper that creates a 'None'
+enum none(T) = Optional!T.init;
+
+/// a type that holds something
+struct Some(T) { T value; alias value this; }
+
+/// helper that creates a 'Some'
+Optional!T some(T)(T value) { return Optional!T(Some!T(value)); }
