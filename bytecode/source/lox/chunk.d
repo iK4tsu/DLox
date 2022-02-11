@@ -6,6 +6,9 @@ an operation our VM will understand and execute.
 */
 enum OpCode : ubyte
 {
+	/// defines a value
+	constant,
+
 	/// return from the current function
 	return_,
 }
@@ -15,6 +18,7 @@ struct Chunk
 {
 	import lox.dynamicarray;
 	import lox.util;
+	import lox.value;
 	import std.sumtype;
 
 	/**
@@ -42,7 +46,21 @@ struct Chunk
 			arr ~= str[];
 
 			disassembleInstruction(code[i]).match!(
-				(string s) { arr ~= s; },
+				(string s) {
+					arr ~= s;
+					if (code[i] == OpCode.constant) () @trusted {
+						import core.stdc.stdio : sprintf;
+
+						arr ~= " [index: ";
+
+						auto l = assumePure(&sprintf)(str.ptr, "%lu", i);
+						arr ~= str[0 .. l];
+						arr ~= "]: ";
+
+						l = assumePure(&sprintf)(str.ptr, "%g", constants[code[i + 1]].value);
+						arr ~= str[0 .. l];
+					} ();
+				},
 				(_) @trusted {
 					char[26] msg;
 					assumePure(&sprintf)(msg.ptr, "unkown instruction '%d'", i);
@@ -71,6 +89,7 @@ struct Chunk
 	{
 		switch (op) with (OpCode)
 		{
+			case constant: return 2;
 			case return_:
 			default: return 1;
 		}
@@ -92,8 +111,9 @@ struct Chunk
 
 		switch (op) with (OpCode)
 		{
-			case return_: return some("return");
-			default:      return none!string;
+			case constant: return some("constant");
+			case return_:  return some("return");
+			default:       return none!string;
 		}
 	}
 
@@ -111,4 +131,7 @@ struct Chunk
 
 	/// bytecode is a series of instructions
 	DynamicArray!ubyte code;
+
+	/// all of the values in our program
+	DynamicArray!Value constants;
 }
