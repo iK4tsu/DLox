@@ -22,6 +22,23 @@ struct Chunk
 	import std.sumtype;
 
 	/**
+	Adds a value to the constant's list.
+
+	Params:
+		value = constant to add.
+
+	Returns: the index in ubyte of the value added.
+	*/
+	ubyte addConstant(Value constant)
+	{
+		auto index = cast(ubyte) constants.length;
+
+		constants ~= constant;
+
+		return index;
+	}
+
+	/**
 	Convert machine instructions into human readable text.
 
 	Params:
@@ -41,9 +58,19 @@ struct Chunk
 
 		for (size_t i; i < code.length; i += instructionOffset(code[i]))
 		{
-			char[8] str;
-			() @trusted { assumePure(&sprintf)(str.ptr, "%04lu  | ", i); } ();
-			arr ~= str[];
+			char[64] buf;
+			auto l = () @trusted { return assumePure(&sprintf)(buf.ptr, "%04lu ", i); } ();
+			arr ~= buf[0 .. l];
+
+			if (i && lines[i] == lines[i - 1])
+			{
+				arr ~= "   | ";
+			}
+			else
+			{
+				l = () @trusted { return assumePure(&sprintf)(buf.ptr, "%4d ", lines[i]); } ();
+				arr ~= buf[0 .. l];
+			}
 
 			disassembleInstruction(code[i]).match!(
 				(string s) {
@@ -51,20 +78,21 @@ struct Chunk
 					if (code[i] == OpCode.constant) () @trusted {
 						import core.stdc.stdio : sprintf;
 
-						arr ~= " [index: ";
+						arr ~= "\t";
 
-						auto l = assumePure(&sprintf)(str.ptr, "%lu", i);
-						arr ~= str[0 .. l];
-						arr ~= "]: ";
+						l = assumePure(&sprintf)(buf.ptr, "%lu", i);
+						arr ~= buf[0 .. l];
+						arr ~= " '";
 
-						l = assumePure(&sprintf)(str.ptr, "%g", constants[code[i + 1]].value);
-						arr ~= str[0 .. l];
+						l = assumePure(&sprintf)(buf.ptr, "%g", constants[code[i + 1]].value);
+						arr ~= buf[0 .. l];
+
+						arr ~= "'";
 					} ();
 				},
 				(_) @trusted {
-					char[26] msg;
-					assumePure(&sprintf)(msg.ptr, "unkown instruction '%d'", i);
-					arr ~= msg[];
+					l = assumePure(&sprintf)(buf.ptr, "unkown instruction '%d'", i);
+					arr ~= buf[0 .. l];
 				}
 			);
 
@@ -128,10 +156,27 @@ struct Chunk
 		() @trusted { printf("%.*s", cast(int) str.length, str[].ptr); } ();
 	}
 
+	/**
+	Add a single byte to the set of instructions. A byte might be an operation
+	or additional information for that operation.
+
+	Params:
+	  byte_ = bytecode to add.
+	  line = line in which byte is in.
+	*/
+	void write(ubyte byte_, int line)
+	{
+		code ~= byte_;
+		lines ~= line;
+	}
+
 
 	/// bytecode is a series of instructions
 	DynamicArray!ubyte code;
 
 	/// all of the values in our program
 	DynamicArray!Value constants;
+
+	/// lines of each instruction in 'code'
+	DynamicArray!int lines;
 }
