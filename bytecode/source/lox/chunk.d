@@ -6,11 +6,26 @@ an operation our VM will understand and execute.
 */
 enum OpCode : ubyte
 {
+	/// binary operator '+'
+	add,
+
 	/// defines a value
 	constant,
 
+	/// binary operator '/'
+	divide,
+
+	/// binary operator '*'
+	multiply,
+
+	/// unary operator '-'
+	negate,
+
 	/// return from the current function
 	return_,
+
+	// binary operator '-'
+	subtract,
 }
 
 
@@ -80,7 +95,12 @@ struct Chunk
 		switch (op) with (OpCode)
 		{
 			case constant: return 2;
+			case add:
+			case divide:
+			case multiply:
+			case negate:
 			case return_:
+			case subtract:
 			default: return 1;
 		}
 	}
@@ -101,8 +121,13 @@ struct Chunk
 
 		switch (op) with (OpCode)
 		{
+			case add:      return some("add");
 			case constant: return some("constant");
+			case divide:   return some("divide");
+			case multiply: return some("multiply");
+			case negate:   return some("negate");
 			case return_:  return some("return");
+			case subtract: return some("subtract");
 			default:       return none!string;
 		}
 	}

@@ -86,17 +86,40 @@ struct VM
 				printf("%.*s", cast(int) str.length, str[].ptr);
 			}
 
+			/// boiler plate for binary operations
+			void binopfun(string op)()
+			{
+				const b = stack.pop();
+				const a = stack.pop();
+				stack.push(Value(mixin("a" ~ op ~ "b")));
+			}
+
 			final switch (readByte()) with (OpCode)
 			{
+				case add:
+					binopfun!"+"();
+					break;
 				case constant: {
 					Value constant = readConstant();
 					stack.push(constant);
 					break;
 				}
+				case divide:
+					binopfun!"/"();
+					break;
+				case multiply:
+					binopfun!"*"();
+					break;
+				case negate:
+					stack.push(Value(-stack.pop()));
+					break;
 				case return_: {
 					stack.pop();
 					return InterpretResult.ok;
 				}
+				case subtract:
+					binopfun!"-"();
+					break;
 			}
 		}
 	}
