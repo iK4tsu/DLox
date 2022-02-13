@@ -58,45 +58,7 @@ struct Chunk
 
 		for (size_t i; i < code.length; i += instructionOffset(code[i]))
 		{
-			char[64] buf;
-			auto l = () @trusted { return assumePure(&sprintf)(buf.ptr, "%04lu ", i); } ();
-			arr ~= buf[0 .. l];
-
-			if (i && lines[i] == lines[i - 1])
-			{
-				arr ~= "   | ";
-			}
-			else
-			{
-				l = () @trusted { return assumePure(&sprintf)(buf.ptr, "%4d ", lines[i]); } ();
-				arr ~= buf[0 .. l];
-			}
-
-			disassembleInstruction(code[i]).match!(
-				(string s) {
-					arr ~= s;
-					if (code[i] == OpCode.constant) () @trusted {
-						import core.stdc.stdio : sprintf;
-
-						arr ~= "\t";
-
-						l = assumePure(&sprintf)(buf.ptr, "%lu", i);
-						arr ~= buf[0 .. l];
-						arr ~= " '";
-
-						l = assumePure(&sprintf)(buf.ptr, "%g", constants[code[i + 1]].value);
-						arr ~= buf[0 .. l];
-
-						arr ~= "'";
-					} ();
-				},
-				(_) @trusted {
-					l = assumePure(&sprintf)(buf.ptr, "unkown instruction '%d'", i);
-					arr ~= buf[0 .. l];
-				}
-			);
-
-			arr ~= '\n';
+			arr ~= disassembleInstructionf(i);
 		}
 
 		return arr;
@@ -145,7 +107,63 @@ struct Chunk
 		}
 	}
 
-	/*
+	/**
+	Converts an instruction to it's human readable text representation. Similiar
+	to `disassembleInstruction` with extra information about the instruction.
+
+	Params:
+		offset = bytecode offset to inspect.
+
+	Returns: a dynamic array containing the text reprensation of the bytecode at
+	the given offset.
+	*/
+	@safe pure nothrow @nogc
+	DynamicArray!char disassembleInstructionf(in size_t offset) scope
+	{
+		import core.stdc.stdio : sprintf;
+
+		DynamicArray!char arr;
+
+		char[64] buf;
+		auto len = () @trusted { return assumePure(&sprintf)(buf.ptr, "%04lu ", offset); } ();
+		arr ~= buf[0 .. len];
+
+		if (offset && lines[offset] == lines[offset - 1])
+		{
+			arr ~= "   | ";
+		}
+		else
+		{
+			len = () @trusted { return assumePure(&sprintf)(buf.ptr, "%4d ", lines[offset]); } ();
+			arr ~= buf[0 .. len];
+		}
+
+		disassembleInstruction(code[offset]).match!(
+			(string s) {
+				arr ~= s;
+				if (code[offset] == OpCode.constant) () @trusted {
+					arr ~= "\t";
+
+					len = assumePure(&sprintf)(buf.ptr, "%lu", offset);
+					arr ~= buf[0 .. len];
+					arr ~= " '";
+
+					len = assumePure(&sprintf)(buf.ptr, "%g", constants[code[offset + 1]].value);
+					arr ~= buf[0 .. len];
+
+					arr ~= "'";
+				} ();
+			},
+			(_) @trusted {
+				len = assumePure(&sprintf)(buf.ptr, "unkown instruction '%d'", offset);
+				arr ~= buf[0 .. len];
+			}
+		);
+
+		return arr ~ '\n';
+	}
+
+	/**
 	Outputs the disassembled information of the chunk.
 	*/
 	@safe nothrow @nogc
