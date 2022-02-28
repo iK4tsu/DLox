@@ -13,6 +13,7 @@ enum InterpretResult
 struct VM
 {
 	import lox.chunk;
+	import lox.dynamicarray;
 	import lox.value;
 
 	@disable this();
@@ -43,11 +44,12 @@ struct VM
 	Returns: an InterpretResult with success or error value.
 	*/
 	@safe pure nothrow @nogc
-	InterpretResult interpret(ref Chunk chunk) scope
+	InterpretResult interpret(return in const(char)[] source) return scope
 	{
-		this.chunk = &chunk;
-		this.ip = () @trusted { return &chunk.code[0]; } ();
-		return run();
+		import lox.compiler;
+		Compiler compiler;
+		compiler.compile(source);
+		return InterpretResult.ok;
 	}
 
 	/// Clears the VM's stack
