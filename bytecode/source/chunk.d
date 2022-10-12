@@ -14,8 +14,8 @@ void initChunk(ref scope Chunk chunk)
 
 alias freeChunk = initChunk;
 
-void writeChunk(ref scope Chunk chunk, ubyte value)
+void writeChunk(ref scope Chunk chunk, ubyte instruction)
 {
-	chunk ~= value;
+	chunk ~= instruction;
 }
 
