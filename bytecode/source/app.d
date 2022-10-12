@@ -1,3 +1,6 @@
 module app;
 
-void main(string[] args) {}
+void main(string[] args)
+{
+
+}
