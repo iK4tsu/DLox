@@ -2,7 +2,7 @@ module chunkdebug;
 
 import std.algorithm : each, until;
 import std.range : back, recurrence;
-import std.stdio : writef, writefln, writeln;
+import std.stdio : write, writef, writefln, writeln;
 import std.format : format;
 
 import chunk;
@@ -19,6 +19,15 @@ void disassembleChunk(ref scope Chunk chunk, in string name)
 size_t disassembleInstruction(ref scope Chunk chunk, size_t offset)
 {
 	offset.writef!"%04d ";
+
+	if (offset && chunk.lines[offset] == chunk.lines[offset - 1])
+	{
+		write("   | ");
+	}
+	else
+	{
+		writef!"%4d "(chunk.lines[offset]);
+	}
 
 	ubyte instruction = chunk[offset];
 	switch (instruction) with (OpCode)
