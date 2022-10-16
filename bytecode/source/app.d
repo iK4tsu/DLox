@@ -2,9 +2,12 @@ module app;
 
 import chunk;
 import chunkdebug;
+import vm;
 
 void main(string[] args)
 {
+	initVM();
+
 	Chunk chunk;
 	initChunk(chunk);
 
@@ -15,5 +18,7 @@ void main(string[] args)
 	writeChunk(chunk, OpCode.opReturn, 123);
 
 	disassembleChunk(chunk, "test chunk");
+	interpret(chunk);
+	freeVM();
 	freeChunk(chunk);
 }
