@@ -3,6 +3,7 @@ module chunkdebug;
 import std.algorithm : each, until;
 import std.range : back, recurrence;
 import std.stdio : writef, writefln, writeln;
+import std.format : format;
 
 import chunk;
 
@@ -25,10 +26,22 @@ size_t disassembleInstruction(ref scope Chunk chunk, size_t offset)
 		case opReturn:
 			return simpleInstruction("OP_RETURN", offset);
 
+		case opConstant:
+			return constantInstruction("OP_CONSTANT", chunk, offset);
+
 		default:
 			instruction.writefln!"Unkown opcode %s";
 			return offset + 1;
 	}
+}
+
+private size_t constantInstruction(in string name, in Chunk chunk, size_t offset)
+{
+	// after a constant instruction there's always an index to the value in the
+	// constant array
+	ubyte constantIndex = chunk[offset + 1];
+	writefln!"%-16s %4d '%s'"(name, constantIndex, chunk.constants[constantIndex]);
+	return offset + 2;
 }
 
 private size_t simpleInstruction(in string name, size_t offset)
