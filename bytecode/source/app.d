@@ -9,10 +9,10 @@ void main(string[] args)
 	initChunk(chunk);
 
 	size_t offset = addConstant(chunk, 1.2);
-	writeChunk(chunk, OpCode.opConstant);
-	writeChunk(chunk, offset);
+	writeChunk(chunk, OpCode.opConstant, 123);
+	writeChunk(chunk, offset, 123);
 
-	writeChunk(chunk, OpCode.opReturn);
+	writeChunk(chunk, OpCode.opReturn, 123);
 
 	disassembleChunk(chunk, "test chunk");
 	freeChunk(chunk);
