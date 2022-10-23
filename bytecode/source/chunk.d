@@ -7,6 +7,11 @@ import value;
 enum OpCode : ubyte
 {
 	opConstant,
+	opAdd,
+	opSubtract,
+	opMultiply,
+	opDivide,
+	opNegate,
 	opReturn,
 }
 

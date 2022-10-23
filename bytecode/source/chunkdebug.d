@@ -38,6 +38,21 @@ size_t disassembleInstruction(ref scope Chunk chunk, size_t offset)
 		case opConstant:
 			return constantInstruction("OP_CONSTANT", chunk, offset);
 
+		case opAdd:
+			return simpleInstruction("OP_ADD", offset);
+
+		case opSubtract:
+			return simpleInstruction("OP_SUBTRACT", offset);
+
+		case opMultiply:
+			return simpleInstruction("OP_MULTIPLY", offset);
+
+		case opDivide:
+			return simpleInstruction("OP_DIVIDE", offset);
+
+		case opNegate:
+			return simpleInstruction("OP_NEGATE", offset);
+
 		default:
 			instruction.writefln!"Unkown opcode %s";
 			return offset + 1;
