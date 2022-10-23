@@ -2,6 +2,7 @@ module vm;
 
 import std.stdio : writeln;
 
+import compiler;
 import chunk;
 import value;
 
@@ -38,11 +39,10 @@ enum InterpretResult
 	runtimeError,
 }
 
-InterpretResult interpret(ref Chunk chunk)
+InterpretResult interpret(in string source)
 {
-	vm.chunk = &chunk;
-	vm.ip = &vm.chunk.instructions[0];
-	return run();
+	compile(source);
+	return InterpretResult.ok;
 }
 
 void push(Value value)

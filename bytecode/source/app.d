@@ -1,5 +1,8 @@
 module app;
 
+import std.stdio : readln, stderr, write;
+import core.stdc.stdlib : exit;
+
 import chunk;
 import chunkdebug;
 import vm;
@@ -7,31 +10,41 @@ import vm;
 void main(string[] args)
 {
 	initVM();
+	scope(exit) freeVM();
 
 	Chunk chunk;
 	initChunk(chunk);
 
-	size_t offset = addConstant(chunk, 1.2);
-	writeChunk(chunk, OpCode.opConstant, 123);
-	writeChunk(chunk, offset, 123);
+	switch (args.length)
+	{
+		case 1: repl(); break;
+		case 2: runFile(args[1]); break;
+		default:
+			stderr.writeln("Usage: clox [path]");
+			exit(64);
+	}
+}
 
-	offset = addConstant(chunk, 3.4);
-	writeChunk(chunk, OpCode.opConstant, 123);
-	writeChunk(chunk, offset, 123);
+private void repl()
+{
+	while (true)
+	{
+		"> ".write;
+		string line = readln();
+		if (!line.length) break;
+		interpret(line);
+	}
+}
 
-	writeChunk(chunk, OpCode.opAdd, 123);
-
-	offset = addConstant(chunk, 5.6);
-	writeChunk(chunk, OpCode.opConstant, 123);
-	writeChunk(chunk, offset, 123);
-
-	writeChunk(chunk, OpCode.opDivide, 123);
-	writeChunk(chunk, OpCode.opNegate, 123);
-
-	writeChunk(chunk, OpCode.opReturn, 123);
-
-	disassembleChunk(chunk, "test chunk");
-	interpret(chunk);
-	freeVM();
-	freeChunk(chunk);
+private void runFile(string path)
+{
+	import core.stdc.stdlib : exit;
+	import std.file : readText;
+	InterpretResult result = interpret(path.readText());
+	switch (result) with (InterpretResult)
+	{
+		case compileError: exit(65);
+		case runtimeError: exit(70);
+		default:
+	}
 }
