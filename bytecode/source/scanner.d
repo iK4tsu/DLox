@@ -49,11 +49,118 @@ void initScanner(const string source)
 
 Token scanToken()
 {
+	skipWhitespace();
 	scanner.start = scanner.current;
 
 	if (isAtEnd()) return makeToken(TokenType.eof);
 
+	immutable ch = advance();
+
+	import std.ascii : isDigit;
+	if (ch.isDigit()) return makeNumber();
+
+	switch (ch) with (TokenType)
+	{
+		case '(': return makeToken(left_paren);
+		case ')': return makeToken(right_paren);
+		case '{': return makeToken(left_brace);
+		case '}': return makeToken(right_brace);
+		case ';': return makeToken(semicolon);
+		case ',': return makeToken(comma);
+		case '.': return makeToken(dot);
+		case '-': return makeToken(minus);
+		case '+': return makeToken(plus);
+		case '/': return makeToken(slash);
+		case '*': return makeToken(star);
+
+		case '!': return makeToken(match('=') ? bang_equal : bang);
+		case '=': return makeToken(match('=') ? equal_equal : equal);
+		case '<': return makeToken(match('=') ? less_equal : less);
+		case '>': return makeToken(match('=') ? greater_equal : greater);
+
+		case '"': return makeString();
+
+		default:
+	}
+
 	return errorToken!"Unexpected character."();
+}
+
+private void skipWhitespace()
+{
+	while (true)
+	{
+		switch (peek())
+		{
+			case '\n': scanner.line++; goto case;
+			case ' ':
+			case '\r':
+			case '\t': advance(); goto default;
+
+			case '/':
+				if (match('/'))
+				{
+					while (peek() != '\n' && !isAtEnd())
+						advance();
+				}
+				goto default;
+
+			default: return;
+		}
+	}
+}
+
+private Token makeString()
+{
+	while (peek() != '"' && !isAtEnd())
+	{
+		if (peek() == '\n') scanner.line++;
+		advance();
+	}
+
+	if (isAtEnd()) return errorToken!"Unterminated string."();
+
+	// the closing quote
+	advance();
+	return makeToken(TokenType.string_);
+}
+
+private Token makeNumber()
+{
+	import std.ascii : isDigit;
+	while (isDigit(peek())) advance();
+
+	if (peek() == '.' && !isDigit(peekNext()))
+	{
+		advance();
+		while (isDigit(peek())) advance();
+	}
+
+	return makeToken(TokenType.number);
+}
+
+private char advance()
+{
+	return *scanner.current++;
+}
+
+private char peek()
+{
+	return *scanner.current;
+}
+
+private char peekNext()
+{
+	if (isAtEnd()) return '\0';
+	return scanner.current[1];
+}
+
+private bool match(in char expected)
+{
+	if (isAtEnd()) return false;
+	if (*scanner.current != expected) return false;
+	scanner.current++;
+	return true;
 }
 
 private bool isAtEnd()
