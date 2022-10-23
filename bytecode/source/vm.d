@@ -61,6 +61,13 @@ private InterpretResult run()
 {
 	auto readByte = () => *vm.ip++;
 	auto readConstant = () => vm.chunk.constants[readByte()];
+	auto binaryOp(alias op)()
+	{
+		// stack based, so 'b' is popped first
+		Value b = pop();
+		Value a = pop();
+		push(mixin("a" ~ op ~ "b"));
+	}
 
 	while (true)
 	{
@@ -78,6 +85,26 @@ private InterpretResult run()
 		{
 			case OpCode.opConstant:
 				readConstant().push();
+				break;
+
+			case OpCode.opAdd:
+				binaryOp!"+"();
+				break;
+
+			case OpCode.opSubtract:
+				binaryOp!"-"();
+				break;
+
+			case OpCode.opMultiply:
+				binaryOp!"*"();
+				break;
+
+			case OpCode.opDivide:
+				binaryOp!"/"();
+				break;
+
+			case OpCode.opNegate:
+				push(-pop());
 				break;
 
 			case OpCode.opReturn:

@@ -15,6 +15,19 @@ void main(string[] args)
 	writeChunk(chunk, OpCode.opConstant, 123);
 	writeChunk(chunk, offset, 123);
 
+	offset = addConstant(chunk, 3.4);
+	writeChunk(chunk, OpCode.opConstant, 123);
+	writeChunk(chunk, offset, 123);
+
+	writeChunk(chunk, OpCode.opAdd, 123);
+
+	offset = addConstant(chunk, 5.6);
+	writeChunk(chunk, OpCode.opConstant, 123);
+	writeChunk(chunk, offset, 123);
+
+	writeChunk(chunk, OpCode.opDivide, 123);
+	writeChunk(chunk, OpCode.opNegate, 123);
+
 	writeChunk(chunk, OpCode.opReturn, 123);
 
 	disassembleChunk(chunk, "test chunk");
