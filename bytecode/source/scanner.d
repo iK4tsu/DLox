@@ -56,8 +56,9 @@ Token scanToken()
 
 	immutable ch = advance();
 
-	import std.ascii : isDigit;
+	import std.ascii : isAlpha, isDigit;
 	if (ch.isDigit()) return makeNumber();
+	if (ch.isAlpha() || ch == '_') return makeIdentifier();
 
 	switch (ch) with (TokenType)
 	{
@@ -108,6 +109,58 @@ private void skipWhitespace()
 			default: return;
 		}
 	}
+}
+
+private Token makeIdentifier()
+{
+	auto checkKeyword(size_t offset, string remaining, TokenType tokenType)
+	{
+		if (scanner.start[offset .. scanner.current - scanner.start] == remaining)
+			return tokenType;
+
+		return TokenType.identifier;
+	}
+
+	auto identifierType()
+	{
+		switch (scanner.start[0]) with (TokenType)
+		{
+			case 'a': return checkKeyword(1, "nd", and);
+			case 'c': return checkKeyword(1, "lass", class_);
+			case 'e': return checkKeyword(1, "lse", else_);
+			case 'i': return checkKeyword(1, "f", if_);
+			case 'n': return checkKeyword(1, "il", nil);
+			case 'o': return checkKeyword(1, "or", or);
+			case 'p': return checkKeyword(1, "rint", print);
+			case 'r': return checkKeyword(1, "eturn", return_);
+			case 's': return checkKeyword(1, "uper", super_);
+			case 'v': return checkKeyword(1, "ar", var);
+			case 'w': return checkKeyword(1, "hile", while_);
+
+			case 'f': if (scanner.current - scanner.start > 1) switch (scanner.start[1])
+			{
+				case 'a': return checkKeyword(2, "lse", false_);
+				case 'o': return checkKeyword(2, "r", for_);
+				case 'u': return checkKeyword(2, "n", fun);
+				default:
+			} break;
+
+			case 't': if (scanner.current - scanner.start > 1) switch (scanner.start[1])
+			{
+				case 'h': return checkKeyword(2, "is", this_);
+				case 'r': return checkKeyword(2, "ue", true_);
+				default:
+			} break;
+
+			default:
+		}
+
+		return TokenType.identifier;
+	}
+
+	import std.ascii : isAlpha, isDigit;
+	while (isAlpha(peek()) || isDigit(peek()) || peek() == '_') advance();
+	return makeToken(identifierType());
 }
 
 private Token makeString()
